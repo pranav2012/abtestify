@@ -82,6 +82,6 @@ jobs:
           node-version: '18.x'
           registry-url: 'https://registry.npmjs.org'
       - name: Publish package on NPM 📦
-        run: yarn publish
+        run: yarn publish --new-version ${{ steps.bump_version.outputs.new_version }}
         env:
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
