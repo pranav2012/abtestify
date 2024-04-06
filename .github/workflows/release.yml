@@ -31,7 +31,7 @@ jobs:
       id: get_version
       run: |
         current_version=$(npm view abtestify version) 
-        echo "{name}={$current_version}" >> $GITHUB_OUTPUT
+        echo "current_version=$current_version" >> $GITHUB_OUTPUT
   
     - name: Bump Version
       id: bump_version
@@ -49,7 +49,7 @@ jobs:
         else
           new_version="$major.$minor.$((patch + 1))"
         fi
-        echo "{name}={$new_version}" >> $GITHUB_OUTPUT
+        echo "new_version=$new_version" >> $GITHUB_OUTPUT
 
     - name: Update GitHub Release
       uses: actions/create-release@v1
