@@ -2,7 +2,7 @@
 	"name": "abtestify",
 	"version": "0.0.1",
 	"type": "module",
-	"description": "abtestify is a package to do ab testing in yor project in next.js react or any frameworks",
+	"description": "abtestify is a package to do ab testing in your project in next.js react or any javascript frameworks",
 	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.ts",
