@@ -30,7 +30,7 @@ jobs:
     - name: Get Current Version
       id: get_version
       run: |
-        current_version=$(npm view abtestify version) 
+        current_version=$(curl -s https://api.github.com/repos/pranav2012/abtestify/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
         echo "current_version=$current_version" >> $GITHUB_OUTPUT
   
     - name: Bump Version
