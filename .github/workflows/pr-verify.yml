@@ -1,0 +1,23 @@
+name: Run Tests
+
+on:
+    pull_request:
+      branches:
+        - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: yarn  # or yarn install
+
+    - name: Build
+      run: yarn build  # or your build command
+
+    - name: Run Tests
+      run: yarn test  # or your test command

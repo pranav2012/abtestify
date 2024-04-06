@@ -1,0 +1,41 @@
+name: Release Package
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: yarn install 
+
+    - name: Run Tests
+      run: yarn test
+
+    - name: Bump Version
+      id: bump_version
+      run: |
+        npm version minor --force --allow-same-version
+        echo ::set-output name=new_version::$(npm version --json | jq -r '.version')
+
+    - name: Publish Package
+      env:
+        NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+      run: npm publish --access public
+
+    - name: Update GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.bump_version.outputs.new_version }}
+        release_name: Release ${{ steps.bump_version.outputs.new_version }}
+        body: |
+          Release ${{ steps.bump_version.outputs.new_version }}
