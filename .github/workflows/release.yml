@@ -13,8 +13,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Cache node modules
+      uses: actions/cache@v2
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
     - name: Install dependencies
-      run: yarn install 
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: yarn --frozen-lockfile
 
     - name: Build Package
       run: yarn build 
@@ -54,9 +63,25 @@ jobs:
     - name: Update GitHub Release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.PA_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ steps.bump_version.outputs.new_version }}
         release_name: Release ${{ steps.bump_version.outputs.new_version }}
         body: |
           Release ${{ steps.bump_version.outputs.new_version }}
+  
+  publish:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Publish package on NPM 📦
+        run: yarn publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
