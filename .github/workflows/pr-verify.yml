@@ -15,6 +15,12 @@ jobs:
         
     - name: Install dependencies
       run: yarn --frozen-lockfile
+    
+    - name: Run Lint
+      run: yarn lint
+
+    - name: Run Type Check
+      run: yarn type-check
 
     - name: Build
       run: yarn build  

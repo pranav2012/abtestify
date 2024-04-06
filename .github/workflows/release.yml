@@ -19,6 +19,12 @@ jobs:
     - name: Build Package
       run: yarn build 
 
+    - name: Run Lint
+      run: yarn lint
+
+    - name: Run Type Check
+      run: yarn type-check
+      
     - name: Run Tests
       run: yarn test
     

@@ -1,0 +1,7 @@
+dist
+**/*.json
+**/*.lock
+**/*.cjs
+**/*.config.*
+/.github
+**.md
