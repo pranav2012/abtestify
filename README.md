@@ -4,7 +4,10 @@ ABTestify is a versatile and user-friendly npm package for implementing A/B test
 
 ## Test Coverage
 
-[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://raw.githubusercontent.com/pranav2012/abtestify/master/coverage/lcov-report/index.html)
+[![Coverage][npm-coverage-image]](npm-coverage-url)
+[![NPM Version][npm-version-image]][npm-url]
+[![NPM Install Size][npm-install-size-image]][npm-install-size-url]
+[![NPM Downloads][npm-downloads-image]][npm-downloads-url]
 
 ## Installation
 
@@ -55,3 +58,11 @@ const variant = getABExperimentBucket({
 
 console.log("Variant:", variant);
 ```
+[npm-coverage-image]: https://img.shields.io/badge/coverage-100%25-brightgreen.svg
+[npm-install-size-image]: https://badgen.net/packagephobia/install/abtestify
+[npm-install-size-url]: https://packagephobia.com/result?p=abtestify
+[npm-downloads-image]: https://badgen.net/npm/dm/abtestify
+[npm-downloads-url]: https://npmcharts.com/compare/abtestify?minimal=true
+[npm-version-image]: https://badgen.net/npm/v/abtestify
+[npm-coverage-url]: https://raw.githubusercontent.com/pranav2012/abtestify/master/coverage/lcov-report/index.html
+[npm-url]: https://npmjs.org/package/abtestify
