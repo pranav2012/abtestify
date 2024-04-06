@@ -22,8 +22,8 @@ jobs:
     - name: Bump Version
       id: bump_version
       run: |
-        npm version minor --force --allow-same-version
-        echo ::set-output name=new_version::$(npm version --json | jq -r '.version')
+        new_version=$(npm version minor --force --allow-same-version | sed -n 's/.*"\([^"]*\)".*/\1/p')
+        echo ::set-output name=new_version::$new_version
 
     - name: Publish Package
       env:
