@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import { IExperimentData, IParams } from '@types';
 
 export const getABExperimentBucket = ({ experimentName, uniqueId, treatmentSplit = 50, exposure = 100, treatmentVariantName = 'treatment', controlVariantName = 'control', ignoreVariantName = 'ignore' }: IParams): IExperimentData => {
