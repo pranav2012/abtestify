@@ -8,6 +8,7 @@ ABTestify is a versatile and user-friendly npm package for implementing A/B test
 [![NPM Version][npm-version-image]][npm-url]
 [![NPM Install Size][npm-install-size-image]][npm-install-size-url]
 [![NPM Downloads][npm-downloads-image]][npm-downloads-url]
+[![MIT Licence][npm-mit-image]][npm-mit-url]
 
 ## Installation
 
@@ -66,3 +67,5 @@ console.log("Variant:", variant);
 [npm-version-image]: https://badgen.net/npm/v/abtestify
 [npm-coverage-url]: https://raw.githubusercontent.com/pranav2012/abtestify/master/coverage/lcov-report/index.html
 [npm-url]: https://npmjs.org/package/abtestify
+[npm-mit-image]: https://badges.frapsoft.com/os/mit/mit.svg?v=103
+[npm-mit-url]: https://opensource.org/licenses/mit-license.php
