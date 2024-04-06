@@ -16,19 +16,37 @@ jobs:
     - name: Install dependencies
       run: yarn install 
 
+    - name: Build Package
+      run: yarn build 
+
     - name: Run Tests
       run: yarn test
 
+    - name: Configure Git
+      run: |
+        git config --global user.email "p2012agarwal@gmail.com"
+        git config --global user.name "Pranav Agarwal"
+
+    - name: Get Current Version
+      id: get_version
+      run: |
+        current_version=$(npm view abtestify version) 
+        echo ::set-output name=current_version::$current_version
+  
     - name: Bump Version
       id: bump_version
       run: |
-        new_version=$(npm version minor --force --allow-same-version | sed -n 's/.*"\([^"]*\)".*/\1/p')
+        current_version=${{ steps.get_version.outputs.current_version }}
+        major_minor=$(echo $current_version | cut -d '.' -f -2)
+        last_digit=$(echo $current_version | cut -d '.' -f 3)
+        new_last_digit=$((last_digit + 1))
+        new_version="$major_minor.$new_last_digit"
         echo ::set-output name=new_version::$new_version
 
     - name: Publish Package
       env:
         NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
-      run: npm publish --access public
+      run: npm version ${{ steps.bump_version.outputs.new_version }} --force --no-git-tag-version && npm publish --access public
 
     - name: Update GitHub Release
       uses: actions/create-release@v1
