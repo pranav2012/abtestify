@@ -11,7 +11,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install dependencies
       run: yarn install 
@@ -42,11 +42,6 @@ jobs:
         new_last_digit=$((last_digit + 1))
         new_version="$major_minor.$new_last_digit"
         echo ::set-output name=new_version::$new_version
-
-    - name: Publish Package
-      env:
-        NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
-      run: npm version ${{ steps.bump_version.outputs.new_version }} --force --no-git-tag-version && npm publish --access public
 
     - name: Update GitHub Release
       uses: actions/create-release@v1
