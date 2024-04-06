@@ -62,7 +62,7 @@ console.log("Variant:", variant);
 
 [npm-coverage-image]: https://codecov.io/gh/pranav2012/abtestify/graph/badge.svg?token=CHCUS36FCG
 [npm-coverage-url]: https://codecov.io/gh/pranav2012/abtestify
-[npm-install-size-image]: https://badgen.net/packagephobia/install/abtestify
+[npm-install-size-image]:https://packagephobia.com/badge?p=abtestify
 [npm-install-size-url]: https://packagephobia.com/result?p=abtestify
 [npm-downloads-image]: https://badgen.net/npm/dm/abtestify
 [npm-downloads-url]: https://npmcharts.com/compare/abtestify?minimal=true

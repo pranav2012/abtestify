@@ -71,7 +71,7 @@ jobs:
         tag_name: ${{ steps.bump_version.outputs.new_version }}
         release_name: v${{ steps.bump_version.outputs.new_version }}
         body: |
-          Release ${{ steps.bump_version.outputs.new_version }}
+          Release v${{ steps.bump_version.outputs.new_version }}
     - name: Setup Node
       uses: actions/setup-node@v3
       with:
