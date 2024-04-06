@@ -59,13 +59,14 @@ const variant = getABExperimentBucket({
 
 console.log("Variant:", variant);
 ```
-[npm-coverage-image]: https://img.shields.io/badge/coverage-100%25-brightgreen.svg
+
+[npm-coverage-image]: https://codecov.io/gh/pranav2012/abtestify/graph/badge.svg?token=CHCUS36FCG
+[npm-coverage-url]: https://codecov.io/gh/pranav2012/abtestify
 [npm-install-size-image]: https://badgen.net/packagephobia/install/abtestify
 [npm-install-size-url]: https://packagephobia.com/result?p=abtestify
 [npm-downloads-image]: https://badgen.net/npm/dm/abtestify
 [npm-downloads-url]: https://npmcharts.com/compare/abtestify?minimal=true
 [npm-version-image]: https://badgen.net/npm/v/abtestify
-[npm-coverage-url]: https://raw.githubusercontent.com/pranav2012/abtestify/master/coverage/lcov-report/index.html
 [npm-url]: https://npmjs.org/package/abtestify
 [npm-mit-image]: https://badges.frapsoft.com/os/mit/mit.svg?v=103
 [npm-mit-url]: https://opensource.org/licenses/mit-license.php
