@@ -52,10 +52,10 @@ jobs:
         major=$(echo $current_version | cut -d '.' -f 1)
         minor=$(echo $current_version | cut -d '.' -f 2)
         patch=$(echo $current_version | cut -d '.' -f 3)
-        if [ $patch -eq 9 ] && [ $minor -eq 9 ]; then
+        if [ $patch -eq 20 ] && [ $minor -eq 9 ]; then
           new_major=$((major + 1))
           new_version="$new_major.0.0"
-        elif [ $patch -eq 9 ]; then
+        elif [ $patch -eq 20 ]; then
           new_minor=$((minor + 1))
           new_version="$major.$new_minor.0"
         else
@@ -63,15 +63,7 @@ jobs:
         fi
         echo "new_version=$new_version" >> $GITHUB_OUTPUT
 
-    - name: Update GitHub Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.bump_version.outputs.new_version }}
-        release_name: v${{ steps.bump_version.outputs.new_version }}
-        body: |
-          Release v${{ steps.bump_version.outputs.new_version }}
+  
     - name: Setup Node
       uses: actions/setup-node@v3
       with:
@@ -82,3 +74,13 @@ jobs:
       run: yarn publish --new-version ${{ steps.bump_version.outputs.new_version }}
       env:
         NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+    
+    - name: Update GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.bump_version.outputs.new_version }}
+        release_name: v${{ steps.bump_version.outputs.new_version }}
+        body: |
+          Release v${{ steps.bump_version.outputs.new_version }}
