@@ -24,6 +24,26 @@ Or via yarn:
 yarn add abtestify
 ```
 
+### Function Parameters
+The function takes an object with the following properties:
+
+* `experimentName` (required): The name of the experiment.
+* `uniqueId` (required): The unique identifier for the user. This can be an email, user ID, etc.
+* `treatmentSplit` (optional, default: 50): The percentage of users to be bucketed into the treatment group.
+* `exposure` (optional, default: 100): The percentage of users to be bucketed into the experiment.
+* `controlVariantName` (optional, default: 'control'): The name of the control variant.
+* `treatmentVariantName` (optional, default: 'treatment'): The name of the treatment variant.
+* `ignoreVariantName` (optional, default: 'ignore'): The name of the variant to be ignored.
+
+### Function Output
+The function returns an object with the following properties:
+
+* `experimentName`: The name of the experiment.
+* `uniqueId`: The unique identifier for the user.
+* `resolvedVariant`: The variant that the user is assigned to, or null if there was an error.
+* `isError` (optional): Indicates if there was an error while assigning the variant.
+* `error` (optional): The error object, if isError is true.
+
 ## Usage
 
 ### React/Next.js Projects
