@@ -1,0 +1,21 @@
+[package]
+name = "abtestify"
+# Set from the release workflow; kept in step with package.json.
+version = "0.2.0"
+edition = "2021"
+rust-version = "1.60"
+description = "Deterministic A/B test bucketing with per-experiment hashing, exposure and split control; identical assignments to the abtestify npm package"
+license = "MIT"
+repository = "https://github.com/pranav2012/abtestify"
+homepage = "https://github.com/pranav2012/abtestify"
+documentation = "https://docs.rs/abtestify"
+readme = "README.md"
+keywords = ["ab-testing", "experiment", "bucketing", "feature-flags", "split-testing"]
+categories = ["algorithms", "web-programming"]
+authors = ["Pranav Agarwal <p2012agarwal@gmail.com>"]
+include = ["src/**/*.rs", "Cargo.toml", "README.md", "LICENSE"]
+
+[dependencies]
+
+[dev-dependencies]
+serde_json = "1"
