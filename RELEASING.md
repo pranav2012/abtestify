@@ -23,6 +23,8 @@ The versions in `rust/Cargo.toml` and `python/pyproject.toml`, and the Gradle de
 
 Do these in any order. Each one switches on one registry.
 
+`scripts/setup-release-secrets.sh` walks through all of them: it asks for each token hidden, sets the secrets, the `pypi` environment and `PYPI_ENABLED`, and can generate and publish the GPG key. It needs `gh` signed in, and `brew install gnupg` for the key.
+
 ### npm (already set up)
 
 - [ ] The `NODE_AUTH_TOKEN` secret holds an npm automation token.
