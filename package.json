@@ -30,6 +30,7 @@
         "test": "jest",
         "test:coverage": "jest --coverage && open coverage/lcov-report/index.html",
         "build": "tsup",
+        "vectors": "node test-vectors/generate.mjs",
         "start": "node dist/index.js",
         "prepare": "husky",
         "lint": "eslint \"**/*.{js,ts}\"",
