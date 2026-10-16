@@ -1,29 +1,164 @@
 name: Run Tests
 
 on:
-    pull_request:
-      branches:
-        - '*'
+  pull_request:
+    branches:
+      - '*'
 
+# Every job checks its port against test-vectors/vectors.json, so all six
+# implementations must agree with the TypeScript reference on every case.
 jobs:
-  build:
+  typescript:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-        
-    - name: Install dependencies
-      run: yarn --frozen-lockfile
-    
-    - name: Run Lint
-      run: yarn lint
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Run Type Check
-      run: yarn type-check
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
 
-    - name: Build
-      run: yarn build  
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
 
-    - name: Run Tests
-      run: yarn test 
+      - name: Run Lint
+        run: yarn lint
+
+      - name: Run Format Check
+        run: yarn format
+
+      - name: Run Type Check
+        run: yarn type-check
+
+      - name: Build
+        run: yarn build
+
+      - name: Run Tests
+        run: yarn test
+
+      - name: Check test vectors are up to date
+        run: |
+          yarn vectors
+          git diff --exit-code test-vectors/vectors.json || {
+            echo "::error::test-vectors/vectors.json is stale. Run 'yarn build && yarn vectors' and commit it."
+            exit 1
+          }
+
+  go:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.18', 'stable']
+    defaults:
+      run:
+        working-directory: go
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: false
+      - name: Vet
+        run: go vet ./...
+      - name: Check formatting
+        run: test -z "$(gofmt -l .)"
+      - name: Test
+        run: go test ./...
+      - name: Test on 32-bit
+        run: GOARCH=386 go test ./...
+
+  rust:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: Check formatting
+        run: cargo fmt --check
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Test
+        run: cargo test
+      - name: Package
+        run: cargo package --allow-dirty
+
+  rust-msrv:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.60
+      - name: Build the library on the minimum supported Rust version
+        run: cargo build --lib
+
+  python:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: python -m pip install . pytest
+      - name: Test
+        run: python -m pytest
+
+  python-package:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build and check the distribution
+        run: |
+          python -m pip install build twine mypy
+          python -m mypy --strict src
+          python -m build
+          python -m twine check --strict dist/*
+
+  java:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: java
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Test and build the publication
+        run: ./gradlew test publishToMavenLocal --console=plain
+
+  swift-linux:
+    runs-on: ubuntu-latest
+    container: swift:6.0
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: swift test
+
+  swift-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: swift test

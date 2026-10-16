@@ -5,29 +5,43 @@ on:
     branches:
       - main
 
+# One release at a time, so two merges can't race for the same version.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+# One version, every registry: release-and-publish computes the version,
+# publishes npm and creates the GitHub release (whose plain semver tag is also
+# the Swift Package Manager release); the jobs after it publish that same
+# version to crates.io, PyPI and Maven Central and tag the Go module. Each
+# registry job skips itself with a warning until its credentials exist.
 jobs:
   release-and-publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      new_version: ${{ steps.bump_version.outputs.new_version }}
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install dependencies
       run: yarn --frozen-lockfile
 
     - name: Build Package
-      run: yarn build 
+      run: yarn build
 
     - name: Run Lint
       run: yarn lint
 
     - name: Run Type Check
       run: yarn type-check
-      
+
     - name: Run Tests
       run: yarn test
-    
+
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4.0.1
       with:
@@ -44,7 +58,7 @@ jobs:
       run: |
         current_version=$(curl -s https://api.github.com/repos/pranav2012/abtestify/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
         echo "current_version=$current_version" >> $GITHUB_OUTPUT
-  
+
     - name: Bump Version
       id: bump_version
       run: |
@@ -71,9 +85,9 @@ jobs:
         fi
         echo "new_version=$new_version" >> $GITHUB_OUTPUT
 
-  
+
     - name: Setup Node
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18.x'
         registry-url: 'https://registry.npmjs.org'
@@ -82,7 +96,8 @@ jobs:
       run: yarn publish --new-version ${{ steps.bump_version.outputs.new_version }}
       env:
         NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
-    
+
+    # The plain semver tag this creates is also the Swift Package Manager release.
     - name: Update GitHub Release
       uses: actions/create-release@v1
       env:
@@ -92,3 +107,143 @@ jobs:
         release_name: v${{ steps.bump_version.outputs.new_version }}
         body: |
           Release v${{ steps.bump_version.outputs.new_version }}
+
+          - npm: `abtestify@${{ steps.bump_version.outputs.new_version }}`
+          - Swift Package Manager: `.package(url: "https://github.com/pranav2012/abtestify.git", exact: "${{ steps.bump_version.outputs.new_version }}")`
+          - Go: `go get github.com/pranav2012/abtestify/go@v${{ steps.bump_version.outputs.new_version }}`
+          - crates.io, PyPI and Maven Central: published by the jobs after this one when their credentials are configured.
+
+  tag-go:
+    needs: release-and-publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.release-and-publish.outputs.new_version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: false
+      - name: Test
+        working-directory: go
+        run: go test ./...
+      # Go modules in a subdirectory are versioned by <dir>/vX.Y.Z tags.
+      - name: Push the go/v tag
+        run: |
+          git tag "go/v${VERSION}" "${GITHUB_SHA}"
+          git push origin "go/v${VERSION}"
+      - name: Ask the Go module proxy to fetch the release
+        run: |
+          GOPROXY=https://proxy.golang.org \
+            go list -m "github.com/pranav2012/abtestify/go@v${VERSION}" \
+            || echo "::warning title=Go proxy::proxy.golang.org has not indexed go/v${VERSION} yet; it will on first use."
+
+  publish-crates:
+    needs: release-and-publish
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.release-and-publish.outputs.new_version }}
+      CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+    steps:
+      - name: Skip without a crates.io token
+        if: env.CARGO_REGISTRY_TOKEN == ''
+        run: echo "::warning title=crates.io skipped::CARGO_REGISTRY_TOKEN is not set, so abtestify ${VERSION} was not published to crates.io. See RELEASING.md."
+      - uses: actions/checkout@v4
+        if: env.CARGO_REGISTRY_TOKEN != ''
+      - uses: dtolnay/rust-toolchain@stable
+        if: env.CARGO_REGISTRY_TOKEN != ''
+      - name: Set the crate version
+        if: env.CARGO_REGISTRY_TOKEN != ''
+        working-directory: rust
+        run: |
+          sed -i -E "0,/^version = \".*\"/s//version = \"${VERSION}\"/" Cargo.toml
+          grep -m1 '^version' Cargo.toml
+      - name: Test
+        if: env.CARGO_REGISTRY_TOKEN != ''
+        working-directory: rust
+        run: cargo test
+      - name: Publish to crates.io
+        if: env.CARGO_REGISTRY_TOKEN != ''
+        working-directory: rust
+        run: cargo publish --allow-dirty
+
+  publish-pypi:
+    needs: release-and-publish
+    if: vars.PYPI_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/abtestify/
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      VERSION: ${{ needs.release-and-publish.outputs.new_version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Set the package version
+        working-directory: python
+        run: |
+          sed -i -E "0,/^version = \".*\"/s//version = \"${VERSION}\"/" pyproject.toml
+          grep -m1 '^version' pyproject.toml
+      - name: Test and build
+        working-directory: python
+        run: |
+          python -m pip install build pytest
+          python -m pip install .
+          python -m pytest
+          python -m build
+      # Trusted publishing: PyPI trusts this workflow via OIDC, no token needed.
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: python/dist/
+
+  pypi-skipped:
+    needs: release-and-publish
+    if: vars.PYPI_ENABLED != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip without PyPI trusted publishing
+        env:
+          VERSION: ${{ needs.release-and-publish.outputs.new_version }}
+        run: echo "::warning title=PyPI skipped::The PYPI_ENABLED repository variable is not 'true', so abtestify ${VERSION} was not published to PyPI. See RELEASING.md."
+
+  publish-maven:
+    needs: release-and-publish
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.release-and-publish.outputs.new_version }}
+      ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+      ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+      ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+      ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+    steps:
+      - name: Check Maven Central credentials
+        id: creds
+        run: |
+          if [ -n "$ORG_GRADLE_PROJECT_mavenCentralUsername" ] && [ -n "$ORG_GRADLE_PROJECT_mavenCentralPassword" ] \
+            && [ -n "$ORG_GRADLE_PROJECT_signingInMemoryKey" ] && [ -n "$ORG_GRADLE_PROJECT_signingInMemoryKeyPassword" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Maven Central skipped::MAVEN_CENTRAL_USERNAME, MAVEN_CENTRAL_PASSWORD, SIGNING_KEY and SIGNING_PASSWORD must all be set, so io.github.pranav2012:abtestify:${VERSION} was not published. See RELEASING.md."
+          fi
+      - uses: actions/checkout@v4
+        if: steps.creds.outputs.enabled == 'true'
+      - uses: actions/setup-java@v4
+        if: steps.creds.outputs.enabled == 'true'
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.creds.outputs.enabled == 'true'
+      - name: Test and publish to Maven Central
+        if: steps.creds.outputs.enabled == 'true'
+        working-directory: java
+        run: ./gradlew test publishToMavenCentral -PreleaseVersion="${VERSION}" --no-configuration-cache --console=plain
