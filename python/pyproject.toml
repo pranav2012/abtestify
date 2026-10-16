@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "abtestify"
+# Set from the release workflow; kept in step with package.json.
+version = "0.2.0"
+description = "Deterministic A/B test bucketing with per-experiment hashing, exposure and split control; identical assignments to the abtestify npm package"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Pranav Agarwal", email = "p2012agarwal@gmail.com" }]
+keywords = ["ab-testing", "ab-test", "experiment", "bucketing", "feature-flags", "split-testing"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Libraries",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/pranav2012/abtestify"
+Repository = "https://github.com/pranav2012/abtestify"
+Issues = "https://github.com/pranav2012/abtestify/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/abtestify"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/abtestify", "tests", "README.md", "LICENSE"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
