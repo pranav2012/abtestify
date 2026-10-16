@@ -49,6 +49,14 @@ jobs:
       id: bump_version
       run: |
         current_version=${{ steps.get_version.outputs.current_version }}
+        # A version set in package.json that is newer than the last release
+        # wins, so breaking changes can ship as a minor or major release.
+        package_version=$(node -p "require('./package.json').version")
+        newest=$(printf '%s\n%s\n' "$current_version" "$package_version" | sort -V | tail -1)
+        if [ "$package_version" != "$current_version" ] && [ "$newest" = "$package_version" ]; then
+          echo "new_version=$package_version" >> $GITHUB_OUTPUT
+          exit 0
+        fi
         major=$(echo $current_version | cut -d '.' -f 1)
         minor=$(echo $current_version | cut -d '.' -f 2)
         patch=$(echo $current_version | cut -d '.' -f 3)
