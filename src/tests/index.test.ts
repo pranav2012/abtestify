@@ -1,5 +1,5 @@
 import { getABExperimentBucket } from '../index';
-import { IParams } from 'src/types/interface';
+import { IParams } from '../types/interface';
 
 const generateUniqueId = () => {
 	return Math.random().toString(36).substring(2);
@@ -131,33 +131,6 @@ describe('getABExperimentBucket function split accuracy', () => {
 });
 
 describe('getABExperimentBucket function edge cases and error handling', () => {
-	// Test error handling
-	test('Error handling', () => {
-		// Mocking a function that throws an error
-		const mockCryptoCreateHash = jest.spyOn(
-			require('crypto'),
-			'createHash',
-		);
-		mockCryptoCreateHash.mockImplementation(() => {
-			throw new Error('Crypto error');
-		});
-		const mockParams: IParams = {
-			experimentName: 'test_experiment',
-			uniqueId: 'test_user_id', // Generate unique ID for each iteration
-		};
-		const result = getABExperimentBucket(mockParams);
-		expect(result).toEqual({
-			experimentName: 'test_experiment',
-			uniqueId: 'test_user_id',
-			resolvedVariant: null,
-			isError: true,
-			error: new Error('Crypto error'),
-		});
-
-		// Restore the original implementation
-		mockCryptoCreateHash.mockRestore();
-	});
-
 	// Test edge cases
 	test('Edge cases: treatmentSplit and exposure at boundaries', () => {
 		const mockParams: IParams = {

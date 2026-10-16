@@ -1,6 +1,6 @@
 # AB Testify
 
-ABTestify is a versatile and user-friendly npm package for implementing A/B testing seamlessly into your JavaScript projects. Whether you're a developer looking to optimize user experiences or a product manager seeking data-driven insights, ABTestify empowers you to effortlessly create, manage, and analyze A/B tests.
+Deterministic A/B test bucketing for JavaScript. Give it an experiment name and a user ID and it returns the same variant for that user every time, with no storage and no network calls. It runs anywhere JavaScript does: Node, browsers, React and Next.js (server and client), Remix, and edge runtimes.
 
 ## Test Coverage
 
@@ -12,77 +12,88 @@ ABTestify is a versatile and user-friendly npm package for implementing A/B test
 
 ## Installation
 
-You can install the package via npm:
-
 ```bash
 npm install abtestify
 ```
 
-Or via yarn:
+Or with yarn or pnpm:
 
 ```bash
 yarn add abtestify
+pnpm add abtestify
 ```
-
-### Function Parameters
-The function takes an object with the following properties:
-
-* `experimentName` (required): The name of the experiment.
-* `uniqueId` (required): The unique identifier for the user. This can be an email, user ID, etc.
-* `treatmentSplit` (optional, default: 50): The percentage of users to be bucketed into the treatment group.
-* `exposure` (optional, default: 100): The percentage of users to be bucketed into the experiment.
-* `controlVariantName` (optional, default: 'control'): The name of the control variant.
-* `treatmentVariantName` (optional, default: 'treatment'): The name of the treatment variant.
-* `ignoreVariantName` (optional, default: 'ignore'): The name of the variant to be ignored.
-
-### Function Output
-The function returns an object with the following properties:
-
-* `experimentName`: The name of the experiment.
-* `uniqueId`: The unique identifier for the user.
-* `resolvedVariant`: The variant that the user is assigned to, or null if there was an error.
-* `isError` (optional): Indicates if there was an error while assigning the variant.
-* `error` (optional): The error object, if isError is true.
 
 ## Usage
 
-### React/Next.js Projects
-
 ```javascript
-// Import the function
-import { getABExperimentBucket } from "abtestify";
+import { getABExperimentBucket } from 'abtestify';
+// or: const { getABExperimentBucket } = require('abtestify');
 
-// Use it in your component
-const variant = getABExperimentBucket({
-	experimentName: "exampleExperiment",
-	uniqueId: "user123",
+const { resolvedVariant } = getABExperimentBucket({
+	experimentName: 'checkout-cta',
+	uniqueId: 'user123',
 	treatmentSplit: 50,
 	exposure: 100,
 });
 
-console.log("Variant:", variant);
+if (resolvedVariant === 'treatment') {
+	// show the new checkout button
+}
 ```
 
-### Normal JavaScript Projects
+The package ships ES modules and CommonJS, with TypeScript types for both.
+
+### Parameters
+
+- `experimentName` (required): the name of the experiment. It is part of the hash, so each experiment splits users independently.
+- `uniqueId` (required): a stable identifier for the user, such as a user ID or a device ID.
+- `treatmentSplit` (optional, default `50`): the percentage of users in the experiment who get the treatment.
+- `exposure` (optional, default `100`): the percentage of all users who are in the experiment. Everyone else gets the ignore variant.
+- `controlVariantName` (optional, default `'control'`): the name of the control variant.
+- `treatmentVariantName` (optional, default `'treatment'`): the name of the treatment variant.
+- `ignoreVariantName` (optional, default `'ignore'`): the name returned for users outside the experiment.
+- `legacyHashing` (optional, default `false`): bucket by `uniqueId` alone, as 0.1.x did. See [Upgrading from 0.1.x](#upgrading-from-01x).
+
+Invalid input throws an `Error`: an empty or non-string `uniqueId` or `experimentName`, or a `treatmentSplit` or `exposure` that isn't a number from 0 to 100.
+
+### Output
+
+- `experimentName`: the experiment name you passed.
+- `uniqueId`: the user ID you passed.
+- `resolvedVariant`: the variant the user is in: the treatment, control or ignore name.
+
+### How bucketing works
+
+The user's bucket is the first 8 bytes of SHA-256 of `experimentName:uniqueId`, mapped to one of 10,000 buckets. Exposure takes the lowest buckets, and the split uses the bucket's last two digits, which means:
+
+- The same user gets the same variant in an experiment on every call, on every platform.
+- Different experiments split users independently.
+- Raising `exposure` (say from 10 to 50) only adds users. Nobody already in the experiment changes variant.
+- Raising `treatmentSplit` only moves users from control to treatment.
+
+## Upgrading from 0.1.x
+
+0.1.x hashed only `uniqueId` and ignored `experimentName`. A user therefore got the same variant in every experiment: someone in treatment for one experiment was in treatment for all of them, so experiments running at the same time skewed each other's results.
+
+0.2.0 includes `experimentName` in the hash. **This reassigns users.** To keep the assignments of experiments that are already running, pass `legacyHashing: true` to them until they finish; it reproduces 0.1.x exactly. Start new experiments without it.
 
 ```javascript
-// Import the function
-const { getABExperimentBucket } = require("abtestify");
-
-// Use it in your code
-const variant = getABExperimentBucket({
-	experimentName: "exampleExperiment",
-	uniqueId: "user123",
-	treatmentSplit: 50,
-	exposure: 100,
+getABExperimentBucket({
+	experimentName: 'running-since-0.1',
+	uniqueId: 'user123',
+	legacyHashing: true,
 });
-
-console.log("Variant:", variant);
 ```
+
+Other changes in 0.2.0:
+
+- Works in browsers and edge runtimes. 0.1.x imported Node's `crypto` and `Buffer`.
+- Invalid input throws instead of returning `resolvedVariant: null` with `isError`.
+- Ships CommonJS as well as ES modules.
 
 [npm-coverage-image]: https://codecov.io/gh/pranav2012/abtestify/graph/badge.svg?token=CHCUS36FCG
 [npm-coverage-url]: https://codecov.io/gh/pranav2012/abtestify
-[npm-install-size-image]:https://packagephobia.com/badge?p=abtestify
+[npm-install-size-image]: https://packagephobia.com/badge?p=abtestify
 [npm-install-size-url]: https://packagephobia.com/result?p=abtestify
 [npm-downloads-image]: https://badgen.net/npm/dm/abtestify
 [npm-downloads-url]: https://npmcharts.com/compare/abtestify?minimal=true
