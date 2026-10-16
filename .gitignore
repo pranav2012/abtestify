@@ -3,3 +3,27 @@
 yarn-error.log
 yarn.lock
 /coverage
+
+# Rust
+/rust/target
+/rust/Cargo.lock
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+/python/dist
+/python/build
+/python/.venv
+.pytest_cache/
+
+# Java / Gradle
+/java/build
+/java/.gradle
+/java/.kotlin
+.idea/
+
+# Swift
+/.build
+/.swiftpm
+/Package.resolved
