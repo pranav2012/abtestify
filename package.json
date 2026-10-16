@@ -1,12 +1,28 @@
 {
     "name": "abtestify",
-    "version": "0.0.1",
+    "version": "0.2.0",
     "type": "module",
-    "description": "abtestify is a package to do ab testing in your project in next.js react or any javascript frameworks",
-    "main": "./dist/index.js",
-    "module": "./dist/index.mjs",
+    "description": "Deterministic A/B test bucketing for Node, browsers and edge runtimes, with per-experiment hashing, exposure and split control",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "files": ["dist"],
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            }
+        },
+        "./package.json": "./package.json"
+    },
+    "sideEffects": false,
+    "files": [
+        "dist"
+    ],
     "repository": "https://github.com/pranav2012/abtestify.git",
     "author": "pranav2012 <p2012agarwal@gmail.com>",
     "license": "MIT",
