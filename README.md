@@ -4,7 +4,7 @@ Deterministic A/B test bucketing for JavaScript. Give it an experiment name and 
 
 ## Test Coverage
 
-[![Coverage][npm-coverage-image]](npm-coverage-url)
+[![Coverage][npm-coverage-image]][npm-coverage-url]
 [![NPM Version][npm-version-image]][npm-url]
 [![NPM Install Size][npm-install-size-image]][npm-install-size-url]
 [![NPM Downloads][npm-downloads-image]][npm-downloads-url]
@@ -93,8 +93,8 @@ Other changes in 0.2.0:
 
 [npm-coverage-image]: https://codecov.io/gh/pranav2012/abtestify/graph/badge.svg?token=CHCUS36FCG
 [npm-coverage-url]: https://codecov.io/gh/pranav2012/abtestify
-[npm-install-size-image]: https://packagephobia.com/badge?p=abtestify
-[npm-install-size-url]: https://packagephobia.com/result?p=abtestify
+[npm-install-size-image]: https://img.shields.io/npm/unpacked-size/abtestify?label=install%20size
+[npm-install-size-url]: https://www.npmjs.com/package/abtestify?activeTab=code
 [npm-downloads-image]: https://badgen.net/npm/dm/abtestify
 [npm-downloads-url]: https://npmcharts.com/compare/abtestify?minimal=true
 [npm-version-image]: https://badgen.net/npm/v/abtestify
