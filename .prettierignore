@@ -5,3 +5,10 @@ dist
 **/*.config.*
 /.github
 **.md
+coverage
+go
+rust
+python
+java
+swift
+.build

@@ -5,6 +5,17 @@ export default tseslint.config(
 	eslint.configs.recommended,
 	...tseslint.configs.recommended,
 	{
-		ignores: ['dist', '**/*.test.ts', '**.config.*'],
+		ignores: [
+			'dist',
+			'coverage',
+			'**/*.test.ts',
+			'**.config.*',
+			'go',
+			'rust',
+			'python',
+			'java',
+			'swift',
+			'.build',
+		],
 	},
 );
