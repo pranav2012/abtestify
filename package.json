@@ -1,6 +1,6 @@
 {
     "name": "abtestify",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "type": "module",
     "description": "Deterministic A/B test bucketing for Node, browsers and edge runtimes, with per-experiment hashing, exposure and split control",
     "main": "./dist/index.cjs",
