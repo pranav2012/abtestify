@@ -12,7 +12,7 @@ every platform. Shared test vectors in the
 
 ```toml
 [dependencies]
-abtestify = "0.2"
+abtestify = "0.3"
 ```
 
 ```rust

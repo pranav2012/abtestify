@@ -85,7 +85,7 @@ Optional fields are pointers so that an explicit `0` is distinct from "use the d
 
 ```toml
 [dependencies]
-abtestify = "0.2"
+abtestify = "0.3"
 ```
 
 ```rust
